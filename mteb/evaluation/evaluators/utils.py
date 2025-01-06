@@ -10,19 +10,19 @@ import tqdm
 from packaging.version import Version
 from sklearn.metrics import auc
 
-def inverse_tvd(a, b):
+def inverse_tvd(a, b, device="cpu"):
     """
     Computes the inverse Total Variation Distance -tvd(a[i], b[j]) for all i and j.
     
     Return:
         Matrix with res[i][j] = -tvd(a[i], b[j])
     """
-    
+
     if not isinstance(a, torch.Tensor):
-        a = torch.tensor(a)
+        a = torch.tensor(a).to(device)
 
     if not isinstance(b, torch.Tensor):
-        b = torch.tensor(b)
+        b = torch.tensor(b).to(device)
 
     if len(a.shape) == 1:
         a = a.unsqueeze(0)
@@ -33,19 +33,19 @@ def inverse_tvd(a, b):
     a_norm = torch.nn.functional.normalize(a, p=1, dim=1)
     b_norm = torch.nn.functional.normalize(b, p=1, dim=1)
     
-    return -0.5 * torch.sum(torch.abs(a_norm[:, None, :] - b_norm[None, :, :]), dim=2)
+    return -0.5 * torch.cdist(a_norm, b_norm, p=1)
 
-def cos_sim(a, b):
+def cos_sim(a, b, device="cpu"):
     """Computes the cosine similarity cos_sim(a[i], b[j]) for all i and j.
 
     Return:
         Matrix with res[i][j]  = cos_sim(a[i], b[j])
     """  # noqa: D402
     if not isinstance(a, torch.Tensor):
-        a = torch.tensor(a)
+        a = torch.tensor(a).to(device)
 
     if not isinstance(b, torch.Tensor):
-        b = torch.tensor(b)
+        b = torch.tensor(b).to(device)
 
     if len(a.shape) == 1:
         a = a.unsqueeze(0)

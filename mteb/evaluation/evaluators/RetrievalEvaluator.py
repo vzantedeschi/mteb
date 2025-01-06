@@ -73,6 +73,9 @@ class DenseRetrievalExactSearch:
         # custom similarity function
         logger.info("Set similarity function.")
         self.sim_func = kwargs.get("similarity", cos_sim)
+        
+        logger.info("Set device.")
+        self.device = kwargs.get("device", "cpu")
 
         if "batch_size" not in encode_kwargs:
             encode_kwargs["batch_size"] = 128
@@ -173,7 +176,7 @@ class DenseRetrievalExactSearch:
                     self.corpus_embeddings[request_qid].append(sub_corpus_embeddings)
 
             # Compute similarites using self defined similarity otherwise default to cosine-similarity
-            similarity_scores = self.sim_func(query_embeddings, sub_corpus_embeddings)
+            similarity_scores = self.sim_func(query_embeddings, sub_corpus_embeddings, self.device)
             if hasattr(self.model, "similarity"):
                 similarity_scores = self.model.similarity(
                     float(self.model.similarity(e1, e2))
