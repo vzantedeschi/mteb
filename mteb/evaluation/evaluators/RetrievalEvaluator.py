@@ -28,6 +28,7 @@ from .utils import (
     nAUC,
     recall_cap,
     top_k_accuracy,
+    inverse_tvd,
 )
 
 logger = logging.getLogger(__name__)
@@ -68,6 +69,10 @@ class DenseRetrievalExactSearch:
         # Model is class that provides encode_corpus() and encode_queries()
         self.model = model
         self.encode_kwargs = encode_kwargs
+        
+        # custom similarity function
+        logger.info("Set similarity function.")
+        self.sim_func_name = kwargs.get("similarity", cos_sim)
 
         if "batch_size" not in encode_kwargs:
             encode_kwargs["batch_size"] = 128
@@ -106,6 +111,7 @@ class DenseRetrievalExactSearch:
         return_sorted: bool = False,
         **kwargs,
     ) -> dict[str, dict[str, float]]:
+                
         logger.info("Encoding Queries.")
         query_ids = list(queries.keys())
         self.results = {qid: {} for qid in query_ids}
@@ -167,7 +173,7 @@ class DenseRetrievalExactSearch:
                     self.corpus_embeddings[request_qid].append(sub_corpus_embeddings)
 
             # Compute similarites using self defined similarity otherwise default to cosine-similarity
-            similarity_scores = cos_sim(query_embeddings, sub_corpus_embeddings)
+            similarity_scores = self.sim_func(query_embeddings, sub_corpus_embeddings)
             if hasattr(self.model, "similarity"):
                 similarity_scores = self.model.similarity(
                     float(self.model.similarity(e1, e2))
