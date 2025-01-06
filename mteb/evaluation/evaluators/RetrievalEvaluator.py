@@ -72,7 +72,7 @@ class DenseRetrievalExactSearch:
         
         # custom similarity function
         logger.info("Set similarity function.")
-        self.sim_func_name = kwargs.get("similarity", cos_sim)
+        self.sim_func = kwargs.get("similarity", cos_sim)
 
         if "batch_size" not in encode_kwargs:
             encode_kwargs["batch_size"] = 128
